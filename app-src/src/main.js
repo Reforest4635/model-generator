@@ -46,9 +46,15 @@ async function loadModel(id) {
     return;
   }
   schema = parseCustomizer(model.source);
+  // Apply any per-model default overrides (e.g. a lighter default Part).
+  if (model.paramDefaults) {
+    for (const grp of schema.groups)
+      for (const p of grp.params)
+        if (p.name in model.paramDefaults) p.value = model.paramDefaults[p.name];
+  }
   buildParamUI(els.params, schema, () => {
     dirty = true;
-    scheduleRender();
+    if (!model.manualRender) scheduleRender(); // manual models render on click only
   });
   if (model.note) {
     const n = document.createElement('p');

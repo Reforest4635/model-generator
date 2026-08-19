@@ -38,9 +38,13 @@ is a maintainer step done before committing (below).
 ## Models
 
 - **Simple Box** — a lightweight stackable bin (loads instantly).
-- **Gridfinity Extended — Bin** — the full ostat configurable bin (141
-  parameters). Heavy model; renders take a few seconds. The ~6 MB library is
-  lazy-loaded only when this model is selected.
+- **Stacking Case (ours)** — our own closed case: plain baseplate floor + inset
+  lid with side indent-and-latch stacking. `part` selector for base/lid.
+- **Rugged Box (smkent)** — the full ribbed/latched/hinged rugged storage box.
+  `Part` selector exports each piece; individual parts render in seconds, the
+  assembled preview views take longer. Auto-render is off for this model.
+- **Gridfinity Extended — …** — all 17 ostat entry points (bin, baseplate, tray,
+  lid, drawers, item holder, etc.). The ~6 MB library is lazy-loaded on first use.
 
 ## How it works
 
@@ -48,27 +52,27 @@ is a maintainer step done before committing (below).
   `openscad-wasm-prebuilt` package, wasm inlined) runs `.scad` → binary STL
   entirely in the browser.
 - Renders use OpenSCAD's **Manifold** backend (`--backend=manifold`), ~10x faster
-  than the CGAL default — which is what makes the heavy extended bin usable.
+  than the CGAL default.
 - The UI is generated from OpenSCAD **Customizer annotations** in each model, so
-  adding a model needs no UI code.
-- Vite is built with `base: './'` (relative paths), which is exactly what HA
-  ingress needs — ingress strips its path prefix and the app resolves assets
-  relative to the ingress URL.
-- Single-threaded, self-contained wasm: no SharedArrayBuffer means no COOP/COEP
-  headers are required, which nginx here doesn't need to set.
+  adding a model needs no UI code. Heavy models can opt into manual render
+  (`manualRender`) and default overrides (`paramDefaults`).
+- Vite is built with `base: './'` (relative paths) for HA ingress.
+- Single-threaded, self-contained wasm: no SharedArrayBuffer, no COOP/COEP.
 
 ## Credits & license
 
-The "Gridfinity Extended — Bin" model uses the **Gridfinity Extended for
-OpenSCAD** library by **ostat**, redistributed under **GPL-3.0**. See
-`app-src/src/lib/gridfinity_extended/` (`LICENSE`, `NOTICE.md`). Source:
-https://github.com/ostat/gridfinity_extended_openscad
+Third-party models are redistributed under their own licenses (see each folder's
+`NOTICE.md` / `LICENSE`):
 
-Because that library is GPL-3.0, its files carry GPL-3.0 obligations wherever
-this repo is distributed. The generator's own frontend loads the models at
-runtime rather than linking them; how GPL applies to the combined distribution
-is a licensing question worth reviewing if you plan to redistribute or relicense
-beyond personal/self-hosted use.
+- **Gridfinity Extended** by **ostat** — GPL-3.0.
+  `app-src/src/lib/gridfinity_extended/`
+- **Gridfinity Rugged Storage Box** by **smkent** — CC-BY-SA-4.0, plus the
+  **gridfinity-rebuilt** dependency by **kennetek** — MIT.
+  `app-src/src/lib/rugged_box/`
+
+GPL-3.0 and CC-BY-SA-4.0 are copyleft/share-alike: those terms carry through
+wherever this repo is distributed. Worth a review before redistributing or
+relicensing beyond personal/self-hosted use.
 
 ## Adding a model
 

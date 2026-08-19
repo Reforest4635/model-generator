@@ -9,6 +9,9 @@
 import boxSrc from './gridfinity-box.scad?raw';
 import caseSrc from './gridfinity-stacking-case.scad?raw';
 
+// Rugged box (+ dependency) as one lazy chunk; entry contents needed for the UI.
+const loadRuggedBox = async () => (await import('../lib/rugged-box-bundle.js')).default;
+
 // The whole ostat Gridfinity Extended library, loaded as one lazy chunk and
 // shared by every Extended entry point below (the dynamic import is cached, so
 // switching between Extended models doesn't refetch it).
@@ -67,6 +70,15 @@ export const MODELS = [
     entry: '/model.scad',
     loadFiles: async () => ({ '/model.scad': caseSrc }),
     note: 'Our own closed case: baseplate floor + inset lid, side indent-and-latch stacking. Set "part" to base or lid and export each. First design — check the fit in preview and print-test the latch/clearance values.',
+  },
+  {
+    id: 'rugged-box',
+    name: 'Rugged Box (smkent)',
+    entry: '/rb/rugged-box-gridfinity.scad',
+    loadFiles: loadRuggedBox,
+    manualRender: true,
+    paramDefaults: { Part: 'bottom' },
+    note: 'smkent Gridfinity Rugged Storage Box — ribbed corners, draw/clip latches, hinge, handle (CC-BY-SA-4.0 + MIT). Auto-render is OFF: set options, then click Render. Use the Part selector to export each piece (bottom, top, latch, handle, label…) — individual parts render in a few seconds. The "assembled" preview views show the whole box but can take a couple of minutes.',
   },
   ...extendedModels,
 ];
