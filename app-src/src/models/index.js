@@ -7,6 +7,7 @@
 //   note              optional UI hint shown under the parameter panel
 
 import boxSrc from './gridfinity-box.scad?raw';
+import caseSrc from './gridfinity-stacking-case.scad?raw';
 
 // The whole ostat Gridfinity Extended library, loaded as one lazy chunk and
 // shared by every Extended entry point below (the dynamic import is cached, so
@@ -59,6 +60,13 @@ export const MODELS = [
     name: 'Simple Box',
     entry: '/model.scad',
     loadFiles: async () => ({ '/model.scad': boxSrc }),
+  },
+  {
+    id: 'stacking-case',
+    name: 'Stacking Case (ours)',
+    entry: '/model.scad',
+    loadFiles: async () => ({ '/model.scad': caseSrc }),
+    note: 'Our own closed case: baseplate floor + inset lid, side indent-and-latch stacking. Set "part" to base or lid and export each. First design — check the fit in preview and print-test the latch/clearance values.',
   },
   ...extendedModels,
 ];

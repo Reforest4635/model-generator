@@ -22,6 +22,8 @@ html, body {
   display: grid;
   grid-template-columns: 320px 1fr;
   height: 100vh;
+  height: 100dvh; /* dynamic viewport height — correct under mobile chrome / HA webview */
+  overflow: hidden;
 }
 
 #panel {
@@ -30,6 +32,7 @@ html, body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  height: 100%;
 }
 
 #panel-head {
@@ -127,3 +130,21 @@ button:disabled { opacity: 0.5; cursor: default; }
 .vec { display: flex; gap: 6px; }
 .vec input { width: 100%; padding: 5px 6px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 5px; }
 .model-note { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 0 0 10px; font-size: 12px; line-height: 1.35; }
+
+/* Always-visible action bar: pin the footer to the bottom of the panel. */
+#panel-foot {
+  position: sticky;
+  bottom: 0;
+  background: var(--panel);
+}
+
+/* Narrow screens (phones / small HA webviews): stack viewer over panel so the
+   parameter list and its pinned action bar are usable. */
+@media (max-width: 680px) {
+  #app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 42dvh 1fr;
+  }
+  #viewer { order: -1; }
+  #panel { border-right: none; border-top: 1px solid var(--line); }
+}
