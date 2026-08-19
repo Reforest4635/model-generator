@@ -35,17 +35,40 @@ The add-on serves the **prebuilt** `gridfinity_generator/public/`. It does not
 run `npm` inside Docker, so installs on a Pi stay fast. Rebuilding the frontend
 is a maintainer step done before committing (below).
 
+## Models
+
+- **Simple Box** — a lightweight stackable bin (loads instantly).
+- **Gridfinity Extended — Bin** — the full ostat configurable bin (141
+  parameters). Heavy model; renders take a few seconds. The ~6 MB library is
+  lazy-loaded only when this model is selected.
+
 ## How it works
 
-- Real OpenSCAD compiled to WebAssembly (single-threaded release `2022.03.20`)
-  runs `.scad` → binary STL entirely in the browser.
+- Real OpenSCAD compiled to WebAssembly (single-threaded **2025** build via the
+  `openscad-wasm-prebuilt` package, wasm inlined) runs `.scad` → binary STL
+  entirely in the browser.
+- Renders use OpenSCAD's **Manifold** backend (`--backend=manifold`), ~10x faster
+  than the CGAL default — which is what makes the heavy extended bin usable.
 - The UI is generated from OpenSCAD **Customizer annotations** in each model, so
   adding a model needs no UI code.
 - Vite is built with `base: './'` (relative paths), which is exactly what HA
-  ingress needs — ingress strips its path prefix and the app resolves assets and
-  the wasm binary relative to the ingress URL.
-- Single-threaded on purpose: no SharedArrayBuffer means no COOP/COEP headers are
-  required, which nginx here doesn't need to set.
+  ingress needs — ingress strips its path prefix and the app resolves assets
+  relative to the ingress URL.
+- Single-threaded, self-contained wasm: no SharedArrayBuffer means no COOP/COEP
+  headers are required, which nginx here doesn't need to set.
+
+## Credits & license
+
+The "Gridfinity Extended — Bin" model uses the **Gridfinity Extended for
+OpenSCAD** library by **ostat**, redistributed under **GPL-3.0**. See
+`app-src/src/lib/gridfinity_extended/` (`LICENSE`, `NOTICE.md`). Source:
+https://github.com/ostat/gridfinity_extended_openscad
+
+Because that library is GPL-3.0, its files carry GPL-3.0 obligations wherever
+this repo is distributed. The generator's own frontend loads the models at
+runtime rather than linking them; how GPL applies to the combined distribution
+is a licensing question worth reviewing if you plan to redistribute or relicense
+beyond personal/self-hosted use.
 
 ## Adding a model
 

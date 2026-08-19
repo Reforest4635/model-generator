@@ -6,9 +6,12 @@
 export function buildParamUI(container, schema, onChange) {
   container.innerHTML = '';
 
-  for (const group of schema.groups) {
+  // Big models (many groups) open collapsed except the first, to stay navigable.
+  const collapseRest = schema.groups.length > 3;
+
+  schema.groups.forEach((group, gi) => {
     const details = document.createElement('details');
-    details.open = true;
+    details.open = collapseRest ? gi === 0 : true;
     details.className = 'group';
 
     const summary = document.createElement('summary');
@@ -19,7 +22,7 @@ export function buildParamUI(container, schema, onChange) {
       details.appendChild(buildControl(param, onChange));
     }
     container.appendChild(details);
-  }
+  });
 }
 
 function buildControl(param, onChange) {
@@ -75,6 +78,33 @@ function buildControl(param, onChange) {
     row.appendChild(input);
     row.appendChild(out);
     return row;
+  } else if (param.control === 'vector') {
+    // N number inputs in a row (e.g. [grid_units, mm]).
+    const wrap = document.createElement('div');
+    wrap.className = 'vec';
+    param.value.forEach((component, idx) => {
+      const cell = document.createElement('input');
+      cell.type = 'number';
+      cell.step = param.step || 'any';
+      cell.value = component;
+      cell.addEventListener('change', () => {
+        param.value = param.value.slice();
+        param.value[idx] = Number(cell.value);
+        onChange(param);
+      });
+      wrap.appendChild(cell);
+    });
+    row.appendChild(wrap);
+    return row;
+  } else if (param.control === 'spinner') {
+    input = document.createElement('input');
+    input.type = 'number';
+    input.step = param.step || 'any';
+    input.value = param.value;
+    input.addEventListener('change', () => {
+      param.value = Number(input.value);
+      onChange(param);
+    });
   } else {
     // plain field
     input = document.createElement('input');

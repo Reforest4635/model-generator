@@ -14,12 +14,19 @@ live 3D preview, download an STL. It runs real OpenSCAD in your browser via
 
 ## Usage
 
-- Pick a model from the dropdown.
+- Pick a model from the dropdown:
+  - **Simple Box** — a quick stackable bin.
+  - **Gridfinity Extended — Bin** — the full ostat configurable bin (many
+    parameters, grouped into collapsible sections). It's a heavy model, so
+    renders take a few seconds.
 - Adjust parameters on the left; the preview re-renders automatically.
 - Click **Download STL** to save the mesh for slicing.
 
-The first render downloads the ~7.7 MB OpenSCAD wasm binary once; the browser
-caches it afterwards.
+The OpenSCAD engine (~11 MB) downloads once on first render and is cached by the
+browser afterwards. The extended library loads only when you pick that model.
+
+The "Gridfinity Extended — Bin" uses the GPL-3.0 Gridfinity Extended library by
+ostat (https://github.com/ostat/gridfinity_extended_openscad).
 
 ## Adding your own models
 

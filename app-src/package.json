@@ -13,6 +13,7 @@
     "vite": "^5.4.0"
   },
   "dependencies": {
-    "three": "^0.169.0"
+    "three": "^0.169.0",
+    "openscad-wasm-prebuilt": "^1.2.0"
   }
 }

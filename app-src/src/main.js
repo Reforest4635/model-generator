@@ -32,13 +32,31 @@ for (const m of MODELS) {
   els.select.appendChild(o);
 }
 
-function loadModel(id) {
+async function loadModel(id) {
   model = getModel(id);
+  els.params.innerHTML = '<p class="hint">Loading model…</p>';
+  els.render.disabled = true;
+  els.export.disabled = true;
+  try {
+    model.files = await model.loadFiles();
+    model.source = model.files[model.entry];
+  } catch (err) {
+    console.error(err);
+    els.params.innerHTML = '<p class="hint">Failed to load model.</p>';
+    return;
+  }
   schema = parseCustomizer(model.source);
   buildParamUI(els.params, schema, () => {
     dirty = true;
     scheduleRender();
   });
+  if (model.note) {
+    const n = document.createElement('p');
+    n.className = 'hint model-note';
+    n.textContent = model.note;
+    els.params.prepend(n);
+  }
+  els.render.disabled = false;
   dirty = true;
   render();
 }
@@ -47,7 +65,7 @@ function loadModel(id) {
 let timer = null;
 function scheduleRender() {
   clearTimeout(timer);
-  timer = setTimeout(render, 350);
+  timer = setTimeout(render, 500);
 }
 
 async function render() {
@@ -61,7 +79,7 @@ async function render() {
   els.render.disabled = true;
   try {
     const values = collectValues(schema);
-    const { stl } = await renderStl(model.source, values, model.libs || {});
+    const { stl } = await renderStl(model, values);
     lastStl = stl;
     viewer.showStl(stl);
     const tris = new DataView(stl.buffer, stl.byteOffset).getUint32(80, true);

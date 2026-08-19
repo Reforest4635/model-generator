@@ -1,21 +1,27 @@
 // models/index.js
-// Register each model here. The `?raw` suffix tells Vite to inline the .scad
-// file as a string at build time. To add a model, drop a .scad in this folder
-// (with Customizer annotations) and add an entry below.
-//
-// For multi-file community libraries (e.g. Gridfinity Extended by ostat), also
-// import the dependency files as ?raw and pass them via `libs` — they get
-// mounted into the wasm filesystem so include<>/use<> resolve. Adjust the mount
-// paths to match the include<> lines in the model.
+// A model has:
+//   id, name          identifiers
+//   loadFiles()       async -> { '/fs/path.scad': contents } (entry + libraries)
+//   entry             which path in the loaded files to compile
+//   source/files      filled in after loadFiles() runs (see main.js)
+//   note              optional UI hint shown under the parameter panel
 
-import gridfinityBox from './gridfinity-box.scad?raw';
+import boxSrc from './gridfinity-box.scad?raw';
 
 export const MODELS = [
   {
     id: 'gridfinity-box',
-    name: 'Gridfinity Box',
-    source: gridfinityBox,
-    libs: {}, // e.g. { '/lib/gridfinity.scad': gridfinityLib }
+    name: 'Simple Box',
+    entry: '/model.scad',
+    loadFiles: async () => ({ '/model.scad': boxSrc }),
+  },
+  {
+    id: 'gridfinity-extended-bin',
+    name: 'Gridfinity Extended — Bin',
+    entry: '/gfext/gridfinity_basic_cup.scad',
+    // Lazy: the ~6 MB library only loads when this model is selected.
+    loadFiles: async () => (await import('../lib/gfext-bundle.js')).default,
+    note: 'Full ostat bin. Heavy model — renders take a few seconds. Labels render but auto-sizing is approximate (this build lacks textmetrics()).',
   },
 ];
 

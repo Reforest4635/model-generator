@@ -1,120 +1,81 @@
-# Gridfinity Generator
+# Gridfinity Generator — frontend
 
-A frontend-only parametric model generator, like the Perplexing Labs one:
-parameter panel → live 3D preview → STL download. Runs **real OpenSCAD** in the
-browser via `openscad-wasm`, renders with three.js, and has **no backend** — so
-it drops straight into Home Assistant under `/config/www/`.
+Frontend-only parametric generator: parameter panel → live 3D preview → STL
+download, running real OpenSCAD in the browser. No backend.
 
 ## Stack
 
-- **Vite** static build (`base: './'` — works from any subpath)
-- **openscad-wasm** single-threaded build (release `2022.03.20`), vendored in
-  `public/wasm/`. Single-threaded on purpose: no SharedArrayBuffer, so it needs
-  no COOP/COEP headers — which HA's static server can't set anyway.
+- **Vite** static build (`base: './'` — works from any subpath, incl. HA ingress)
+- **openscad-wasm-prebuilt** — a single-threaded OpenSCAD **2025** build with the
+  wasm inlined into one JS file. Self-contained (no separate `.wasm` fetch, no
+  SharedArrayBuffer, so no COOP/COEP headers needed). Imported dynamically so it
+  lands in its own lazy chunk.
 - **three.js** viewer (OrbitControls + STLLoader)
-- Auto-generated UI from **OpenSCAD Customizer annotations** — any annotated
-  `.scad` gets a parameter panel for free.
+- UI auto-generated from **OpenSCAD Customizer annotations** in each model.
+- Renders use **`--backend=manifold`** (~10x faster than the CGAL default).
 
-## Run locally
-
-```bash
-npm install
-npm run dev      # http://localhost:5173
-npm run build    # -> dist/
-```
-
-## How it fits together
+## Files
 
 ```
 src/
-  main.js            wires everything; debounced auto-render on slider drag
-  openscad-runner.js loads the wasm, writes model.scad, runs -D defines -> binstl
-  customizer.js      parses /* [Group] */ and // [min:max] annotations -> schema
-  param-ui.js        builds sliders/checkboxes/dropdowns from the schema
-  viewer.js          three.js scene; re-frames camera per model (Z-up -> Y-up)
+  main.js            wires everything; debounced auto-render
+  openscad-runner.js fresh wasm instance per render; mounts files; -D defines
+  customizer.js      parses annotations (incl. vectors + ostat <!!start/end!!>)
+  param-ui.js        sliders/checkboxes/dropdowns/spinners/vectors from schema
+  viewer.js          three.js scene (Z-up -> Y-up)
   models/
-    index.js         model registry (imports .scad with ?raw)
+    index.js         model registry (lazy loadFiles + entry path)
     gridfinity-box.scad
-public/wasm/         openscad.js + openscad.wasm.js + openscad.wasm (vendored)
+  lib/
+    gfext-bundle.js               one lazy chunk for the whole library
+    gridfinity_extended/…         vendored ostat library (GPL-3.0, see NOTICE.md)
 ```
 
-## Adding a model
+Each render spins up a fresh OpenSCAD instance (its runtime can't be re-run),
+writes the model's files into the virtual FS, and runs
+`entry --backend=manifold -D … -o /out.stl`.
 
-1. Drop an annotated `.scad` into `src/models/`. Use Customizer syntax so the UI
-   builds itself:
+## Models
 
-   ```openscad
-   /* [Size] */
-   width = 30;      // [10:100]
-   depth = 20;      // [10:0.5:100]
-   style = "round"; // [round, square]
-   with_lid = true;
-
-   /* [Hidden] */
-   $fn = 48;
-   ```
-
-2. Register it in `src/models/index.js`:
-
-   ```js
-   import myModel from './my-model.scad?raw';
-   export const MODELS = [
-     { id: 'my-model', name: 'My Model', source: myModel, libs: {} },
-     // ...
-   ];
-   ```
-
-### Multi-file libraries (e.g. Gridfinity Extended by ostat)
-
-If a model uses `include <...>` / `use <...>`, import each dependency as `?raw`
-and mount it via `libs` — the paths become files in the wasm filesystem:
+A model in `src/models/index.js`:
 
 ```js
-import model from './rugged-box.scad?raw';
-import gfLib from './lib/gridfinity.scad?raw';
-
-export const MODELS = [{
-  id: 'rugged-box', name: 'Rugged Box', source: model,
-  libs: { '/rugged-box/gridfinity.scad': gfLib },  // match the include<> path
-}];
+{
+  id: 'my-model',
+  name: 'My Model',
+  entry: '/model.scad',                       // path to compile in the FS
+  loadFiles: async () => ({ '/model.scad': src }), // FS contents (lazy)
+  note: 'optional hint shown in the panel',
+}
 ```
 
-The runner writes every `libs` entry into the virtual FS before compiling, so
-`include <gridfinity.scad>` resolves. Deep dependency trees just need every file
-mounted at the path the `include`/`use` lines expect.
+- **Single-file model:** add an annotated `.scad` to `src/models/`, import it
+  `?raw`, and return `{ '/model.scad': src }` from `loadFiles`.
+- **Library-backed model** (like the extended bin): keep the library under
+  `src/lib/<name>/`, add a small bundle module that eagerly globs it into one
+  lazy chunk, and have `loadFiles` dynamically import that bundle. The `entry`
+  points at the library's entry `.scad`; `include<>`/`use<>` resolve because the
+  whole tree is mounted.
 
-## Deploy to Home Assistant
+### Customizer annotations understood
 
-The whole thing is static files, and anything under `/config/www/` is served at
-`/local/` **without HA authentication**, so no add-on or auth plumbing is needed.
-
-```bash
-npm run build
-# copy the build output into HA config
-cp -r dist/* /config/www/gridfinity/
+```openscad
+/* [Group] */          // section
+/* [Hidden] */         // hide following vars
+w = 30;    // [10:100]           slider
+w = 30;    // [10:0.5:100]       stepped slider
+s = "a";   // [a, b, c]          dropdown (labels: [a:"Nice A", b])
+on = true;                       checkbox
+n = 3;     // 0.1                spinner with step
+v = [2,0]; // 0.1                vector of numbers (one input per element)
 ```
 
-Then add a **Webpage** card (or a dashboard panel) pointing at:
+If a file has ostat `/*<!!start …!!>*/ … /*<!!end …!!>*/` markers, only that
+region is parsed.
 
-```
-/local/gridfinity/index.html
-```
+## Adding more Gridfinity Extended entry points
 
-Because `base: './'` makes all paths relative, `index.html`, the JS/CSS, and
-`wasm/openscad.wasm` all resolve correctly under `/local/gridfinity/`. The first
-render fetches the ~7.7 MB `openscad.wasm` once; the browser caches it after.
-
-## Notes / gotchas
-
-- **STL export uses binary STL** (`--export-format=binstl`) — smaller and faster
-  to parse than ASCII.
-- **Preview vs. final:** this renders true CGAL geometry to STL (not a preview
-  mesh), so what you see is what you slice.
-- **Colors:** STL carries no color; the viewer tint is cosmetic. (Matches the
-  known CGAL-flattens-color behavior — irrelevant here since we export geometry.)
-- **Updating openscad-wasm:** keep using a *single-threaded* release. Threaded
-  builds ship an `openscad.worker.js` and need SharedArrayBuffer + COOP/COEP,
-  which the HA static server won't provide.
-- The `warmUp()` call in `main.js` starts fetching the wasm on page load so the
-  first Render isn't waiting on the download.
-```
+The whole ostat library is already vendored, so exposing another entry point
+(baseplate, drawers, item holder, …) is just another `MODELS` entry with the
+matching `entry` path — no new files needed. Validate render time first; some
+are heavier than the basic cup.

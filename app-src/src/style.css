@@ -123,3 +123,7 @@ button:disabled { opacity: 0.5; cursor: default; }
 
 #viewer { position: relative; min-width: 0; }
 #viewer canvas { display: block; width: 100%; height: 100%; }
+
+.vec { display: flex; gap: 6px; }
+.vec input { width: 100%; padding: 5px 6px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 5px; }
+.model-note { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 0 0 10px; font-size: 12px; line-height: 1.35; }
