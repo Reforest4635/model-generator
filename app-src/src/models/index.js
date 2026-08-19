@@ -8,6 +8,51 @@
 
 import boxSrc from './gridfinity-box.scad?raw';
 
+// The whole ostat Gridfinity Extended library, loaded as one lazy chunk and
+// shared by every Extended entry point below (the dynamic import is cached, so
+// switching between Extended models doesn't refetch it).
+const loadGfext = async () => (await import('../lib/gfext-bundle.js')).default;
+
+// Every root .scad in the ostat library, with a friendly name.
+const EXTENDED = [
+  ['gridfinity_basic_cup.scad', 'Extended — Bin'],
+  ['gridfinity_baseplate.scad', 'Extended — Baseplate'],
+  ['gridfinity_baseplate_flsun_q5.scad', 'Extended — Baseplate (FLSUN Q5)'],
+  ['gridfinity_tray.scad', 'Extended — Tray'],
+  ['gridfinity_lid.scad', 'Extended — Lid'],
+  ['gridfinity_sliding_lid.scad', 'Extended — Sliding Lid'],
+  ['gridfinity_drawers.scad', 'Extended — Drawers'],
+  ['gridfinity_item_holder.scad', 'Extended — Item Holder'],
+  ['gridfinity_socket_holder.scad', 'Extended — Socket Holder'],
+  ['gridfinity_vertical_divider.scad', 'Extended — Vertical Divider'],
+  ['gridfinity_silverware.scad', 'Extended — Silverware Tray'],
+  ['gridfinity_silverware_legacy.scad', 'Extended — Silverware Tray (Legacy)'],
+  ['gridfinity_sieve.scad', 'Extended — Sieve'],
+  ['gridfinity_glue_stick.scad', 'Extended — Glue Stick Holder'],
+  ['gridfinity_marble.scad', 'Extended — Marble'],
+  ['gridfinity_chess.scad', 'Extended — Chess'],
+  ['stanley_basic_cup.scad', 'Extended — Stanley Cup'],
+];
+
+// Entry points that take a few seconds to render, so the user isn't surprised.
+const HEAVY = new Set([
+  'gridfinity_drawers.scad',
+  'gridfinity_silverware.scad',
+  'gridfinity_tray.scad',
+  'gridfinity_item_holder.scad',
+  'gridfinity_vertical_divider.scad',
+]);
+
+const extendedModels = EXTENDED.map(([file, name]) => ({
+  id: 'ext-' + file.replace(/\.scad$/, ''),
+  name,
+  entry: '/gfext/' + file,
+  loadFiles: loadGfext,
+  note:
+    'ostat Gridfinity Extended (GPL-3.0).' +
+    (HEAVY.has(file) ? ' Heavy model — renders take several seconds.' : ''),
+}));
+
 export const MODELS = [
   {
     id: 'gridfinity-box',
@@ -15,14 +60,7 @@ export const MODELS = [
     entry: '/model.scad',
     loadFiles: async () => ({ '/model.scad': boxSrc }),
   },
-  {
-    id: 'gridfinity-extended-bin',
-    name: 'Gridfinity Extended — Bin',
-    entry: '/gfext/gridfinity_basic_cup.scad',
-    // Lazy: the ~6 MB library only loads when this model is selected.
-    loadFiles: async () => (await import('../lib/gfext-bundle.js')).default,
-    note: 'Full ostat bin. Heavy model — renders take a few seconds. Labels render but auto-sizing is approximate (this build lacks textmetrics()).',
-  },
+  ...extendedModels,
 ];
 
 export function getModel(id) {
