@@ -8,6 +8,7 @@
 
 import boxSrc from './gridfinity-box.scad?raw';
 import caseSrc from './gridfinity-stacking-case.scad?raw';
+import clamshellSrc from './clamshell-box.scad?raw';
 
 // Rugged box (+ dependency) as one lazy chunk; entry contents needed for the UI.
 const loadRuggedBox = async () => (await import('../lib/rugged-box-bundle.js')).default;
@@ -63,6 +64,13 @@ export const MODELS = [
     name: 'Simple Box',
     entry: '/model.scad',
     loadFiles: async () => ({ '/model.scad': boxSrc }),
+  },
+  {
+    id: 'clamshell-box',
+    name: 'Clamshell Box (ours)',
+    entry: '/model.scad',
+    loadFiles: async () => ({ '/model.scad': clamshellSrc }),
+    note: 'Our own minimalist clamshell: smooth exterior, interior gridfinity baseplate, barrel hinge (pin = 1.75mm filament or 3mm/M3), front snap latch, side stacking. Set "part" to base / lid / pin and export each; "assembled" shows it open as a preview. FIRST DRAFT — print-test the hinge fit (hinge_clearance), latch grip, and stacking detents, then tell me what to tune.',
   },
   {
     id: 'stacking-case',

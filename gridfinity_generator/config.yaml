@@ -1,5 +1,5 @@
 name: Gridfinity Generator
-version: "0.5.0"
+version: "0.6.0"
 slug: gridfinity_generator
 description: Browser-based parametric Gridfinity model generator (OpenSCAD-wasm)
 url: https://github.com/Reforest4635/model-generator
