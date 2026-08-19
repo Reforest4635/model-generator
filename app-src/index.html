@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gridfinity Generator</title>
+  </head>
+  <body>
+    <div id="app">
+      <aside id="panel">
+        <header id="panel-head">
+          <h1>Gridfinity Generator</h1>
+          <select id="model-select" title="Model"></select>
+        </header>
+        <div id="params"><p class="hint">Loading…</p></div>
+        <footer id="panel-foot">
+          <button id="render-btn" type="button">Render</button>
+          <button id="export-btn" type="button" disabled>Download STL</button>
+          <p id="status" class="status"></p>
+        </footer>
+      </aside>
+      <main id="viewer"></main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

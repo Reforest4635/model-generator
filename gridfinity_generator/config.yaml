@@ -1,0 +1,18 @@
+name: Gridfinity Generator
+version: "0.1.0"
+slug: gridfinity_generator
+description: Browser-based parametric Gridfinity model generator (OpenSCAD-wasm)
+url: https://github.com/Reforest4635/model-generator
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+# Served through Home Assistant's authenticated ingress proxy — an "Open Web UI"
+# button appears on the add-on page. No host port is exposed.
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:grid
+panel_title: Gridfinity
+init: false

@@ -1,0 +1,6 @@
+# Frontend build artifacts / deps (source lives in app-src/, built output is
+# committed under gridfinity_generator/public/)
+app-src/node_modules/
+app-src/dist/
+**/*.log
+.DS_Store
