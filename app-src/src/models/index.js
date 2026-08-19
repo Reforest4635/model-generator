@@ -9,6 +9,7 @@
 import boxSrc from './gridfinity-box.scad?raw';
 import caseSrc from './gridfinity-stacking-case.scad?raw';
 import clamshellSrc from './clamshell-box.scad?raw';
+import predSrc from './pred-style-box.scad?raw';
 
 // Rugged box (+ dependency) as one lazy chunk; entry contents needed for the UI.
 const loadRuggedBox = async () => (await import('../lib/rugged-box-bundle.js')).default;
@@ -64,6 +65,13 @@ export const MODELS = [
     name: 'Simple Box',
     entry: '/model.scad',
     loadFiles: async () => ({ '/model.scad': boxSrc }),
+  },
+  {
+    id: 'pred-style-box',
+    name: 'Storage Box (Pred-style)',
+    entry: '/model.scad',
+    loadFiles: async () => ({ '/model.scad': predSrc }),
+    note: 'Clean closed storage box (our OpenSCAD reimplementation of the Pred form): smooth flush lid, back barrel hinge (pin = 1.75mm filament or 3mm/M3), front snap latch, interior gridfinity baseplate. "part" = base / lid / pin to export; assembled_closed / _open are previews. Print-test the hinge (hinge_clearance), latch (latch_grip/clearance), and lid tongue (tongue_clear) and tell me what to tune.',
   },
   {
     id: 'clamshell-box',
