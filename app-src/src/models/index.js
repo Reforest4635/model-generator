@@ -10,6 +10,9 @@ import boxSrc from './gridfinity-box.scad?raw';
 import caseSrc from './gridfinity-stacking-case.scad?raw';
 import clamshellSrc from './clamshell-box.scad?raw';
 import predSrc from './pred-style-box.scad?raw';
+import grommetSrc from './cable-grommet.scad?raw';
+import outletSrc from './outlet-cover.scad?raw';
+import hookSrc from './cable-fish-hook.scad?raw';
 
 // openGrid entries (small) + the shared BOSL2 library (large, lazy chunk).
 import ogPlate from '../lib/opengrid/openGrid.scad?raw';
@@ -104,6 +107,28 @@ export const MODELS = [
     manualRender: true,
     paramDefaults: { Part: 'bottom' },
     note: 'smkent Gridfinity Rugged Storage Box — ribbed corners, draw/clip latches, hinge, handle (CC-BY-SA-4.0 + MIT). Auto-render is OFF: set options, then click Render. Use the Part selector to export each piece (bottom, top, latch, handle, label…) — individual parts render in a few seconds. The "assembled" preview views show the whole box but can take a couple of minutes.',
+  },
+  // ---- Home / shop parts (our own designs) ----
+  {
+    id: 'cable-grommet',
+    name: 'Cable Grommet + Cover',
+    entry: '/model.scad',
+    loadFiles: async () => ({ '/model.scad': grommetSrc }),
+    note: 'Front-mounted cable pass-through: bezel + snap-on cover. shape = edge (back-edge notch) / round (hole saw) / rect; part = frame / cover / both / print. Set opening size, panel thickness, and slot mode to your install.',
+  },
+  {
+    id: 'outlet-cover',
+    name: 'Outlet Cover Box',
+    entry: '/model.scad',
+    loadFiles: async () => ({ '/model.scad': outletSrc }),
+    note: 'Snap-on outlet cover box (US duplex / Decora). device = duplex / decora; part = base / lid / both / assembled; edge_profile and front_style for the styling. Base mounts with the original plate screw.',
+  },
+  {
+    id: 'cable-fish-hook',
+    name: 'Cable Fishing Hook',
+    entry: '/model.scad',
+    loadFiles: async () => ({ '/model.scad': hookSrc }),
+    note: 'Modular bayonet-locking cable fishing hook. part = hook / segment / handle (chain segments for reach), or hook_flat / print_upright / all for print layouts. Print the hook flat in PETG.',
   },
   ...extendedModels,
   // ---- openGrid (28mm wall/desk system) ----

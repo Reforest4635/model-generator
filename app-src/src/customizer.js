@@ -199,13 +199,14 @@ export function parseCustomizer(source) {
 
     const type = inferType(rawVal);
     const def = parseDefault(rawVal, type);
-    // Prefer the inline comment; fall back to a description-only line above it.
-    const comment =
-      inlineComment != null && inlineComment.trim() !== ''
-        ? inlineComment
-        : pendingComment;
-    const spec = parseSpec(comment, type);
-    if (!spec.description && pendingComment) spec.description = pendingComment;
+    // Only the INLINE comment defines the control (e.g. // [a,b,c] or // [0:10]).
+    // A comment on the line ABOVE is used as description text only — its brackets
+    // must not be read as options (they're usually unrelated prose).
+    const inline = inlineComment != null ? inlineComment : '';
+    const spec = parseSpec(inline, type);
+    if (!spec.description) {
+      spec.description = (pendingComment || '').replace(/\[[^\]]*\]/g, '').trim();
+    }
 
     current.params.push({ name, type, value: def, default: def, ...spec });
     pendingComment = '';
