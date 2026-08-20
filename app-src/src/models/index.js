@@ -11,6 +11,15 @@ import caseSrc from './gridfinity-stacking-case.scad?raw';
 import clamshellSrc from './clamshell-box.scad?raw';
 import predSrc from './pred-style-box.scad?raw';
 
+// openGrid entries (small) + the shared BOSL2 library (large, lazy chunk).
+import ogPlate from '../lib/opengrid/openGrid.scad?raw';
+import ogSnap from '../lib/opengrid/opengrid-snap.scad?raw';
+import ogBorder from '../lib/opengrid/openGrid-border.scad?raw';
+import ogBin from '../lib/opengrid/MulticonnectBin.scad?raw';
+import ogShelf from '../lib/opengrid/MulticonnectShelf.scad?raw';
+const loadBosl = async () => (await import('../lib/opengrid-bundle.js')).default;
+const withBosl = (src) => async () => ({ ...(await loadBosl()), '/model.scad': src });
+
 // Rugged box (+ dependency) as one lazy chunk; entry contents needed for the UI.
 const loadRuggedBox = async () => (await import('../lib/rugged-box-bundle.js')).default;
 
@@ -97,6 +106,45 @@ export const MODELS = [
     note: 'smkent Gridfinity Rugged Storage Box — ribbed corners, draw/clip latches, hinge, handle (CC-BY-SA-4.0 + MIT). Auto-render is OFF: set options, then click Render. Use the Part selector to export each piece (bottom, top, latch, handle, label…) — individual parts render in a few seconds. The "assembled" preview views show the whole box but can take a couple of minutes.',
   },
   ...extendedModels,
+  // ---- openGrid (28mm wall/desk system) ----
+  {
+    id: 'opengrid-plate',
+    name: 'openGrid — Plate',
+    entry: '/model.scad',
+    loadFiles: withBosl(ogPlate),
+    paramDefaults: { Full_or_Lite: 'Full' },
+    note: 'openGrid tile/plate (David D, CC-BY; OpenSCAD by QuackWorks, CC-BY-NC-SA — non-commercial). Full mode is the default and works with connectors/screws/chamfers. NOTE: "Lite" mode currently crashes the browser engine when combined with connector/screw/chamfer holes — use Full for now. Renders take several seconds.',
+  },
+  {
+    id: 'opengrid-snap',
+    name: 'openGrid — Snap Connector',
+    entry: '/model.scad',
+    loadFiles: withBosl(ogSnap),
+    note: 'openGrid snap connector — snaps into a tile to join tiles or mount accessories (CC-BY-NC-SA, non-commercial).',
+  },
+  {
+    id: 'opengrid-border',
+    name: 'openGrid — Border',
+    entry: '/model.scad',
+    loadFiles: withBosl(ogBorder),
+    note: 'openGrid border/edge trim (CC-BY-NC-SA, non-commercial).',
+  },
+  {
+    id: 'opengrid-bin',
+    name: 'openGrid — Bin (MultiConnect)',
+    entry: '/model.scad',
+    loadFiles: withBosl(ogBin),
+    paramDefaults: { distanceBetweenSlots: 28 },
+    note: 'MultiConnect bin that mounts to openGrid via snap connectors. Slot spacing defaulted to 28mm for openGrid (CC-BY-NC-SA, non-commercial).',
+  },
+  {
+    id: 'opengrid-shelf',
+    name: 'openGrid — Shelf (MultiConnect)',
+    entry: '/model.scad',
+    loadFiles: withBosl(ogShelf),
+    paramDefaults: { distanceBetweenSlots: 28 },
+    note: 'MultiConnect shelf that mounts to openGrid via snap connectors. Slot spacing defaulted to 28mm for openGrid (CC-BY-NC-SA, non-commercial).',
+  },
 ];
 
 export function getModel(id) {

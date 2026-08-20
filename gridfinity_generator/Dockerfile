@@ -4,7 +4,7 @@ FROM ${BUILD_FROM}
 # Bump this on every release to force the layers below to rebuild (matches the
 # Hearth workflow). Docker also busts the COPY layer automatically when the
 # contents of public/ change, but this makes intent explicit.
-ARG CACHEBUST=7
+ARG CACHEBUST=8
 
 RUN apk add --no-cache nginx \
     && mkdir -p /run/nginx
